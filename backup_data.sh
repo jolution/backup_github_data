@@ -10,7 +10,22 @@
 # GitHub Backup Branches as zip
 # v0.1
 
-CUSTOMERLIST=folder_name_here
+cd /backup/
+if test -f "/backup/.env"
+then
+    eval "$(egrep -v '^#' .env | xargs)"
+
+    if [ -z "$CUSTOMERLIST" ]
+    then
+        echo "No Customerlist found, exit"
+        exit 1
+    fi
+
+else
+    echo "/backup/.env doesnt exists, skip backup"
+    exit 1
+fi
+
 
 function backup {
 
@@ -27,7 +42,7 @@ function backup {
         fi
 
     else
-        echo ".env doesnt exists, skip backup"
+        echo "/backup/customer/$CUSTOMER/.env doesnt exists, skip backup"
         exit 1
     fi
 
