@@ -16,7 +16,20 @@ function backup {
 
     cd /backup/customer/$CUSTOMER/
 
-    eval "$(egrep -v '^#' .env | xargs)"
+    if test -f "/backup/customer/$CUSTOMER/.env"
+    then
+        eval "$(egrep -v '^#' .env | xargs)"
+
+        if [ -z "$TOKEN" ]
+        then
+            echo "No Github Token found, exit"
+            exit 1
+        fi
+
+    else
+        echo ".env doesnt exists, skip backup"
+        exit 1
+    fi
 
     # General settings
     FILE_PREFIX=`date +\%Y-\%m-\%d_\%H-\%M-\%S`
@@ -39,7 +52,7 @@ function backup {
         #BRANCHLASTBACKUP=$(stat --printf="%y" $BACKUP_DIR/$BRANCH | grep -oE "[0-9]{4}-[0-9]{1,2}-[0-9]{1,2}")
 
         BRANCHLASTPUSH=$(curl -H "Authorization: token $TOKEN" https://api.github.com/repos/$OWNER/$CUSTOMER/commits/$BRANCH | grep -oE "([0-9]{4}-[0-9]{1,2}-[0-9]{1,2})T([0-9]{2}:[0-9]{2}:[0-9]{2})Z" | head -1)
-        BRANCHLASTPUSHDATE=$(date -d $BRANCHLASTPUSH +%Y-%m-%d_%H-%M-%S)
+        BRANCHLASTPUSHDATE=$(date -d $BRANCHLASTPUSH +"%Y-%m-%d_%H-%M-%S")
 
         FILE=$BACKUP_DIR/${BRANCH}/${BRANCHLASTPUSHDATE}_${BRANCH}.zip
         if test -f "$FILE"
